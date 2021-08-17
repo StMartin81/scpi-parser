@@ -672,7 +672,7 @@ size_t SCPI_ResultBool(scpi_t * context, scpi_bool_t val) {
  * @param token
  * @param ptr
  */
-static void invalidateToken(scpi_token_t * token, char * ptr) {
+static void invalidateToken(scpi_token_t * token, const char *ptr) {
     token->len = 0;
     token->ptr = ptr;
     token->type = SCPI_TOKEN_UNKNOWN;

@@ -128,7 +128,7 @@ int32_t SCPI_ErrorCount(scpi_t * context) {
     return result;
 }
 
-static scpi_bool_t SCPI_ErrorAddInternal(scpi_t * context, int16_t err, char * info, size_t info_len) {
+static scpi_bool_t SCPI_ErrorAddInternal(scpi_t * context, int16_t err, char const * info, size_t info_len) {
     scpi_error_t error_value;
     /* SCPIDEFINE_strndup is sometimes a dumy that does not reference it's arguments. 
        Since info_len is not referenced elsewhere caoing to void prevents unusd argument warnings */
@@ -173,7 +173,7 @@ static const struct error_reg errs[ERROR_DEFS_N] = {
  * @param info - additional text information or NULL for no text
  * @param info_len - length of text or 0 for automatic length
  */
-void SCPI_ErrorPushEx(scpi_t * context, int16_t err, char * info, size_t info_len) {
+void SCPI_ErrorPushEx(scpi_t * context, int16_t err, const char *info, size_t info_len) {
     int i;
     /* automatic calculation of length */
     if (info && info_len == 0) {
