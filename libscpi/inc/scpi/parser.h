@@ -56,7 +56,7 @@ extern "C" {
 #endif
 
     scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len);
-    scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len);
+    scpi_bool_t SCPI_Parse(scpi_t * context, const char *data, int len);
 
     size_t SCPI_ResultCharacters(scpi_t * context, const char * data, size_t len);
 #define SCPI_ResultMnemonic(context, data) SCPI_ResultCharacters((context), (data), strlen(data))

@@ -185,7 +185,7 @@ static scpi_bool_t findCommandHeader(scpi_t * context, const char * header, int 
  * @param len - command line length
  * @return FALSE if there was some error during evaluation of commands
  */
-scpi_bool_t SCPI_Parse(scpi_t * context, char * data, int len) {
+scpi_bool_t SCPI_Parse(scpi_t * context, const char *data, int len) {
     scpi_bool_t result = TRUE;
     scpi_parser_state_t * state;
     int r;
