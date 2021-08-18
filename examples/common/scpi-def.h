@@ -26,10 +26,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SCPI_DEF_H_
-#define __SCPI_DEF_H_
+#ifndef SCPI_DEF_H_
+#define SCPI_DEF_H_
 
-#include "scpi/scpi.h"
+#include <scpi/scpi.h>
 
 #define SCPI_INPUT_BUFFER_LENGTH 256
 #define SCPI_ERROR_QUEUE_SIZE 17
@@ -53,5 +53,4 @@ scpi_result_t SCPI_Flush(scpi_t * context);
 
 scpi_result_t SCPI_SystemCommTcpipControlQ(scpi_t * context);
 
-#endif /* __SCPI_DEF_H_ */
-
+#endif /* SCPI_DEF_H_ */

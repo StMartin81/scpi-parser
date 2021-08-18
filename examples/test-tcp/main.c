@@ -46,8 +46,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "scpi/scpi.h"
 #include "../common/scpi-def.h"
+#include <scpi/scpi.h>
 
 size_t SCPI_Write(scpi_t * context, const char * data, size_t len) {
     (void) context;

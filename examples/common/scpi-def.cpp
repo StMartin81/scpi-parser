@@ -35,11 +35,10 @@
  *
  */
 
+#include "scpi-def.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "scpi/scpi.h"
-#include "scpi-def.h"
 
 static scpi_result_t DMM_MeasureVoltageDcQ(scpi_t * context) {
     scpi_number_t param1, param2;
