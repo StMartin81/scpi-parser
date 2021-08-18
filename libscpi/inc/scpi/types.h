@@ -38,9 +38,9 @@
 #ifndef SCPI_TYPES_H
 #define SCPI_TYPES_H
 
+#include "scpi/config.h"
 #include <stddef.h>
 #include <stdint.h>
-#include "scpi/config.h"
 
 #if HAVE_STDBOOL
 #include <stdbool.h>
