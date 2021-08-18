@@ -1,0 +1,5 @@
+option(BUILD_EXAMPLES "Build examples" OFF)
+add_subdirectory(libscpi)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
