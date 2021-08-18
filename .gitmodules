@@ -1,0 +1,3 @@
+[submodule "cmake-cunit"]
+	path = cmake-cunit
+	url = ../../k0ekk0ek/cmake-cunit.git
