@@ -6,6 +6,9 @@ project(libscpi
 option (BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(WITH_COMMAND_TAGS "Enable command tags field" ON)
 option(WITH_USER_ERROR_LIST "Enable also LIST_OF_USER_ERRORS to be included" OFF)
+option(BUILD_TESTS "Build test executables" OFF)
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/..cmake-cunit/cmake/Modules")
 
 set(LIBSCPI_VERSION_MAJOR 2)
 set(LIBSCPI_VERSION_MINOR 1)
@@ -30,7 +33,6 @@ generate_export_header(scpi
   EXPORT_FILE_NAME "scpi/scpi_export.h"
   )
 configure_file("inc/scpi/config.h.in" "scpi/config.h")
-
 
 set(SCPI_PUBLIC_HEADER_FILES
   "${CMAKE_CURRENT_BINARY_DIR}/scpi/config.h"
@@ -69,6 +71,11 @@ target_include_directories(scpi
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
+
+
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
 
 set(ConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/cmake/scpi)
 
