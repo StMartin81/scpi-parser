@@ -1,0 +1,16 @@
+target_sources(scpi
+  PRIVATE
+  "lexer_private.h"
+  "utils_private.h"
+  "fifo_private.h"
+  "parser_private.h"
+  "error.c"
+  "fifo.c"
+  "ieee488.c"
+  "minimal.c"
+  "parser.c"
+  "units.c"
+  "utils.c"
+  "lexer.c"
+  "expression.c"
+  )
