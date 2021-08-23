@@ -72,7 +72,6 @@ target_include_directories(scpi
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   )
 
-
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
