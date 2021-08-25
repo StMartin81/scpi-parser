@@ -304,8 +304,11 @@ static int skipColon(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int skipProgramMnemonic(lex_state_t * state) {
-    const char * startPos = state->pos;
+static int
+skipProgramMnemonic(lex_state_t* state)
+{
+    const char* startPos = state->pos;
+
     if (!iseos(state) && isalpha((uint8_t)(state->pos[0]))) {
         state->pos++;
         while (!iseos(state) && (isalnum((uint8_t)(state->pos[0])) || ischr(state, '_'))) {
@@ -313,10 +316,12 @@ static int skipProgramMnemonic(lex_state_t * state) {
         }
     }
 
-    if (iseos(state)) {
-        return (state->pos - startPos) * SKIP_INCOMPLETE;
+    if ((state->pos - startPos) == 0)
+        return SKIP_NONE;
+    else if (iseos(state)) {
+        return SKIP_INCOMPLETE;
     } else {
-        return (state->pos - startPos) * SKIP_OK;
+        return SKIP_OK;
     }
 }
 
@@ -357,9 +362,9 @@ static int skipCommonProgramHeader(lex_state_t * state) {
         res = skipProgramMnemonic(state);
         if (res == SKIP_NONE && iseos(state)) {
             return SKIP_INCOMPLETE;
-        } else if (res <= SKIP_INCOMPLETE) {
+        } else if (res == SKIP_INCOMPLETE) {
             return SKIP_OK;
-        } else if (res >= SKIP_OK) {
+        } else if (res == SKIP_OK) {
             return SKIP_OK;
         } else {
             return SKIP_INCOMPLETE;
@@ -378,17 +383,17 @@ static int skipCompoundProgramHeader(lex_state_t * state) {
     int firstColon = skipColon(state);
 
     res = skipProgramMnemonic(state);
-    if (res >= SKIP_OK) {
+    if (res == SKIP_OK) {
         while (skipColon(state)) {
             res = skipProgramMnemonic(state);
-            if (res <= SKIP_INCOMPLETE) {
+            if (res == SKIP_INCOMPLETE) {
                 return SKIP_OK;
             } else if (res == SKIP_NONE) {
                 return SKIP_INCOMPLETE;
             }
         }
         return SKIP_OK;
-    } else if (res <= SKIP_INCOMPLETE) {
+    } else if (res == SKIP_INCOMPLETE) {
         return SKIP_OK;
     } else if (firstColon) {
         return SKIP_INCOMPLETE;
