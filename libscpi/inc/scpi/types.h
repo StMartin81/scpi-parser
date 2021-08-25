@@ -175,17 +175,18 @@ extern "C" {
     };
     typedef enum _scpi_token_type_t scpi_token_type_t;
 
-    struct _scpi_token_t {
+    struct _scpi_token_t
+    {
         scpi_token_type_t type;
-        const char * ptr;
-        int len;
+        const char* ptr;
+        size_t len;
     };
     typedef struct _scpi_token_t scpi_token_t;
 
     struct _lex_state_t {
         const char * buffer;
         const char * pos;
-        int len;
+        size_t len;
     };
     typedef struct _lex_state_t lex_state_t;
 

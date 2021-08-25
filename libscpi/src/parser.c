@@ -164,7 +164,9 @@ static scpi_bool_t processCommand(scpi_t * context) {
  * @param context
  * @result TRUE if context->paramlist is filled with correct values
  */
-static scpi_bool_t findCommandHeader(scpi_t * context, const char * header, int len) {
+static scpi_bool_t
+findCommandHeader(scpi_t* context, const char* header, size_t len)
+{
     int32_t i;
     const scpi_command_t * cmd;
 
@@ -188,8 +190,8 @@ static scpi_bool_t findCommandHeader(scpi_t * context, const char * header, int 
 scpi_bool_t SCPI_Parse(scpi_t * context, const char *data, size_t len) {
     scpi_bool_t result = TRUE;
     scpi_parser_state_t * state;
-    int r;
-    scpi_token_t cmd_prev = {.type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0};
+    size_t r;
+    scpi_token_t cmd_prev = { .type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0u };
 
     if (context == NULL) {
         return FALSE;
@@ -307,20 +309,20 @@ void SCPI_InitHeap(scpi_t * context,
  */
 scpi_bool_t SCPI_Input(scpi_t * context, const char * data, size_t len) {
     scpi_bool_t result = TRUE;
-    size_t totcmdlen = 0;
-    int cmdlen = 0;
+    size_t totcmdlen = 0u;
+    size_t cmdlen = 0u;
 
-    if (len == 0) {
+    if (len == 0u) {
         context->buffer.data[context->buffer.position] = 0;
         result = SCPI_Parse(context, context->buffer.data, context->buffer.position);
-        context->buffer.position = 0;
+        context->buffer.position = 0u;
     } else {
-        int buffer_free;
+        size_t buffer_free;
 
         buffer_free = context->buffer.length - context->buffer.position;
         if (len > (buffer_free - 1)) {
             /* Input buffer overrun - invalidate buffer */
-            context->buffer.position = 0;
+            context->buffer.position = 0u;
             context->buffer.data[context->buffer.position] = 0;
             SCPI_ErrorPush(context, SCPI_ERROR_INPUT_BUFFER_OVERRUN);
             return FALSE;
@@ -338,7 +340,7 @@ scpi_bool_t SCPI_Input(scpi_t * context, const char * data, size_t len) {
                 result = SCPI_Parse(context, context->buffer.data, totcmdlen);
                 memmove(context->buffer.data, context->buffer.data + totcmdlen, context->buffer.position - totcmdlen);
                 context->buffer.position -= totcmdlen;
-                totcmdlen = 0;
+                totcmdlen = 0u;
             } else {
                 if (context->parser_state.programHeader.type == SCPI_TOKEN_UNKNOWN
                         && context->parser_state.termination == SCPI_MESSAGE_TERMINATION_NONE) break;
@@ -1424,7 +1426,9 @@ int scpiParser_parseAllProgramData(lex_state_t * state, scpi_token_t * token, in
  * @param len
  * @return
  */
-int scpiParser_detectProgramMessageUnit(scpi_parser_state_t * state, const char *buffer, int len) {
+size_t
+scpiParser_detectProgramMessageUnit(scpi_parser_state_t* state, const char* buffer, size_t len)
+{
     lex_state_t lex_state;
     scpi_token_t tmp;
     int result = 0;
