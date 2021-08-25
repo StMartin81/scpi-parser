@@ -247,59 +247,58 @@ CU_Clean(parser)
 CU_Test(parser, CommandsHandling)
 {
 #define TEST_INPUT(data, output)                                                                                       \
-  ;                                                                                                                    \
-  do {                                                                                                                 \
-    SCPI_Input(&scpi_context, data, strlen(data));                                                                     \
-    CU_ASSERT_STRING_EQUAL(output, output_buffer);                                                                     \
-  } while (0)
-  output_buffer_clear();
-  error_buffer_clear();
+    do {                                                                                                               \
+        SCPI_Input(&scpi_context, data, strlen(data));                                                                 \
+        CU_ASSERT_STRING_EQUAL(output, output_buffer);                                                                 \
+    } while (0)
+    output_buffer_clear();
+    error_buffer_clear();
 
-  /* Test single command */
-  TEST_INPUT("*IDN?\r\n", "MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    /* Test single command */
+    TEST_INPUT("*IDN?\r\n", "MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  /* Test multiple commands in input buffer */
-  TEST_INPUT("*IDN?\r\n*IDN?\r\n*IDN?\r\n*IDN?\r\n", "MA,IN,0,VER\r\nMA,IN,0,VER\r\nMA,IN,0,VER\r\nMA,IN,0,VER\r\n");
-  output_buffer_clear();
+    /* Test multiple commands in input buffer */
+    TEST_INPUT("*IDN?\r\n*IDN?\r\n*IDN?\r\n*IDN?\r\n", "MA,IN,0,VER\r\nMA,IN,0,VER\r\nMA,IN,0,VER\r\nMA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  TEST_INPUT("*IDN?;*IDN?;*IDN?;*IDN?\r\n", "MA,IN,0,VER;MA,IN,0,VER;MA,IN,0,VER;MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    TEST_INPUT("*IDN?;*IDN?;*IDN?;*IDN?\r\n", "MA,IN,0,VER;MA,IN,0,VER;MA,IN,0,VER;MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  TEST_INPUT("*IDN?;*OPC;*IDN?\r\n", "MA,IN,0,VER;MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    TEST_INPUT("*IDN?;*OPC;*IDN?\r\n", "MA,IN,0,VER;MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  /* Test one command in multiple buffers */
-  TEST_INPUT("*IDN?", "");
-  TEST_INPUT("\r\n", "MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    /* Test one command in multiple buffers */
+    TEST_INPUT("*IDN?", "");
+    TEST_INPUT("\r\n", "MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  /* Test empty command at the beggining */
-  TEST_INPUT(";*IDN?\r\n", "MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    /* Test empty command at the beggining */
+    TEST_INPUT(";*IDN?\r\n", "MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  TEST_INPUT(";", "");
-  TEST_INPUT("*IDN?\r\n", "MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    TEST_INPUT(";", "");
+    TEST_INPUT("*IDN?\r\n", "MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  /* Test input "timeout" - input with length == 0 */
-  TEST_INPUT("*IDN?", "");
-  TEST_INPUT("", "MA,IN,0,VER\r\n");
-  output_buffer_clear();
+    /* Test input "timeout" - input with length == 0 */
+    TEST_INPUT("*IDN?", "");
+    TEST_INPUT("", "MA,IN,0,VER\r\n");
+    output_buffer_clear();
 
-  /* Test ctree traversal */
-  TEST_INPUT("TEST:TREEA?;TREEB?\r\n", "10;20\r\n");
-  output_buffer_clear();
+    /* Test ctree traversal */
+    TEST_INPUT("TEST:TREEA?;TREEB?\r\n", "10;20\r\n");
+    output_buffer_clear();
 
-  TEST_INPUT("TEST:TREEA?;:TEXT? \"PARAM1\", \"PARAM2\"\r\n", "10;\"PARAM2\"\r\n");
-  output_buffer_clear();
+    TEST_INPUT("TEST:TREEA?;:TEXT? \"PARAM1\", \"PARAM2\"\r\n", "10;\"PARAM2\"\r\n");
+    output_buffer_clear();
 
-  /* Test special characters in parameters */
-  TEST_INPUT("TEXT? \"\", \"test\r\n\"\r\n", "\"test\r\n\"\r\n");
-  output_buffer_clear();
+    /* Test special characters in parameters */
+    TEST_INPUT("TEXT? \"\", \"test\r\n\"\r\n", "\"test\r\n\"\r\n");
+    output_buffer_clear();
 
-  CU_ASSERT_EQUAL(err_buffer_pos, 0)
-  error_buffer_clear();
+    CU_ASSERT_EQUAL(err_buffer_pos, 0)
+    error_buffer_clear();
 }
 
 CU_Test(parser, ErrorHandling)
@@ -343,11 +342,12 @@ CU_Test(parser, ErrorHandling)
 
 CU_Test(parser, ErrorHandlingDeviceDependent)
 {
-#define TEST_CMDERR(output) {\
-    SCPI_Input(&scpi_context, "SYST:ERR:NEXT?\r\n", strlen("SYST:ERR:NEXT?\r\n"));\
-    CU_ASSERT_STRING_EQUAL(output, output_buffer);\
-    output_buffer_clear();\
-}
+#define TEST_CMDERR(output)                                                                                            \
+    do {                                                                                                               \
+        SCPI_Input(&scpi_context, "SYST:ERR:NEXT?\r\n", strlen("SYST:ERR:NEXT?\r\n"));                                 \
+        CU_ASSERT_STRING_EQUAL(output, output_buffer);                                                                 \
+        output_buffer_clear();                                                                                         \
+    } while (0)
 
     output_buffer_clear();
     error_buffer_clear();
@@ -393,20 +393,22 @@ CU_Test(parser, ErrorHandlingDeviceDependent)
 
 CU_Test(parser, IEEE4882)
 {
-#define TEST_IEEE4882(data, output) {                           \
-    SCPI_Input(&scpi_context, data, strlen(data));              \
-    CU_ASSERT_STRING_EQUAL(output, output_buffer);              \
-    output_buffer_clear();                                      \
-}
+#define TEST_IEEE4882(data, output)                                                                                    \
+    do {                                                                                                               \
+        SCPI_Input(&scpi_context, data, strlen(data));                                                                 \
+        CU_ASSERT_STRING_EQUAL(output, output_buffer);                                                                 \
+        output_buffer_clear();                                                                                         \
+    } while (0)
 
-#define TEST_IEEE4882_REG(reg, expected) {                                     \
-    CU_ASSERT_EQUAL(SCPI_RegGet(&scpi_context, (scpi_reg_name_t)(reg)), expected);\
-}
+#define TEST_IEEE4882_REG(reg, expected)                                                                               \
+    do {                                                                                                               \
+        CU_ASSERT_EQUAL(SCPI_RegGet(&scpi_context, (scpi_reg_name_t)(reg)), expected);                                 \
+    } while (0)
 
-
-#define TEST_IEEE4882_REG_SET(reg, val) {                                      \
-    SCPI_RegSet(&scpi_context, reg, val);                                      \
-}
+#define TEST_IEEE4882_REG_SET(reg, val)                                                                                \
+    do {                                                                                                               \
+        SCPI_RegSet(&scpi_context, reg, val);                                                                          \
+    } while (0)
 
     output_buffer_clear();
     error_buffer_clear();
@@ -646,26 +648,26 @@ CU_Test(parser, SCPI_ParamInt64)
   TEST_ParamInt64("-9223372036854775807", TRUE, -9223372036854775807LL, TRUE, 0);
 }
 
-#define TEST_ParamUInt64(data, mandatory, expected_value, expected_result, expected_error_code) \
-{                                                                                       \
-    uint64_t value;                                                                     \
-    scpi_bool_t result;                                                                 \
-    scpi_error_t errCode;                                                               \
-                                                                                        \
-    SCPI_CoreCls(&scpi_context);                                                        \
-    scpi_context.input_count = 0;                                                       \
-    scpi_context.param_list.lex_state.buffer = data;                                    \
-    scpi_context.param_list.lex_state.len = strlen(scpi_context.param_list.lex_state.buffer);\
-    scpi_context.param_list.lex_state.pos = scpi_context.param_list.lex_state.buffer;   \
-    result = SCPI_ParamUInt64(&scpi_context, &value, mandatory);                        \
-                                                                                        \
-    SCPI_ErrorPop(&scpi_context, &errCode);                                             \
-    CU_ASSERT_EQUAL(result, expected_result);                                           \
-    if (expected_result) {                                                              \
-        CU_ASSERT_EQUAL(value, expected_value);                                         \
-    }                                                                                   \
-    CU_ASSERT_EQUAL(errCode.error_code, expected_error_code);                           \
-}
+#define TEST_ParamUInt64(data, mandatory, expected_value, expected_result, expected_error_code)                        \
+    do {                                                                                                               \
+        uint64_t value;                                                                                                \
+        scpi_bool_t result;                                                                                            \
+        scpi_error_t errCode;                                                                                          \
+                                                                                                                       \
+        SCPI_CoreCls(&scpi_context);                                                                                   \
+        scpi_context.input_count = 0;                                                                                  \
+        scpi_context.param_list.lex_state.buffer = data;                                                               \
+        scpi_context.param_list.lex_state.len = strlen(scpi_context.param_list.lex_state.buffer);                      \
+        scpi_context.param_list.lex_state.pos = scpi_context.param_list.lex_state.buffer;                              \
+        result = SCPI_ParamUInt64(&scpi_context, &value, mandatory);                                                   \
+                                                                                                                       \
+        SCPI_ErrorPop(&scpi_context, &errCode);                                                                        \
+        CU_ASSERT_EQUAL(result, expected_result);                                                                      \
+        if (expected_result) {                                                                                         \
+            CU_ASSERT_EQUAL(value, expected_value);                                                                    \
+        }                                                                                                              \
+        CU_ASSERT_EQUAL(errCode.error_code, expected_error_code);                                                      \
+    } while (0)
 
 CU_Test(parser, SCPI_ParamUInt64)
 {
@@ -689,25 +691,25 @@ CU_Test(parser, SCPI_ParamUInt64)
 }
 
 #define TEST_ParamFloat(data, mandatory, expected_value, expected_result, expected_error_code)                         \
-  {                                                                                                                    \
-    float value;                                                                                                       \
-    scpi_bool_t result;                                                                                                \
-    scpi_error_t errCode;                                                                                              \
+    do {                                                                                                               \
+        float value;                                                                                                   \
+        scpi_bool_t result;                                                                                            \
+        scpi_error_t errCode;                                                                                          \
                                                                                                                        \
-    SCPI_CoreCls(&scpi_context);                                                                                       \
-    scpi_context.input_count = 0;                                                                                      \
-    scpi_context.param_list.lex_state.buffer = data;                                                                   \
-    scpi_context.param_list.lex_state.len = strlen(scpi_context.param_list.lex_state.buffer);                          \
-    scpi_context.param_list.lex_state.pos = scpi_context.param_list.lex_state.buffer;                                  \
-    result = SCPI_ParamFloat(&scpi_context, &value, mandatory);                                                        \
+        SCPI_CoreCls(&scpi_context);                                                                                   \
+        scpi_context.input_count = 0;                                                                                  \
+        scpi_context.param_list.lex_state.buffer = data;                                                               \
+        scpi_context.param_list.lex_state.len = strlen(scpi_context.param_list.lex_state.buffer);                      \
+        scpi_context.param_list.lex_state.pos = scpi_context.param_list.lex_state.buffer;                              \
+        result = SCPI_ParamFloat(&scpi_context, &value, mandatory);                                                    \
                                                                                                                        \
-    SCPI_ErrorPop(&scpi_context, &errCode);                                                                            \
-    CU_ASSERT_EQUAL(result, expected_result);                                                                          \
-    if (expected_result) {                                                                                             \
-      CU_ASSERT_DOUBLE_EQUAL(value, expected_value, 0.000001);                                                         \
-    }                                                                                                                  \
-    CU_ASSERT_EQUAL(errCode.error_code, expected_error_code);                                                          \
-  }
+        SCPI_ErrorPop(&scpi_context, &errCode);                                                                        \
+        CU_ASSERT_EQUAL(result, expected_result);                                                                      \
+        if (expected_result) {                                                                                         \
+            CU_ASSERT_DOUBLE_EQUAL(value, expected_value, 0.000001);                                                   \
+        }                                                                                                              \
+        CU_ASSERT_EQUAL(errCode.error_code, expected_error_code);                                                      \
+    } while (0)
 
 CU_Test(parser, SCPI_ParamFloat)
 {
@@ -1686,22 +1688,27 @@ CU_Test(parser, NumberToStr)
     CU_ASSERT_EQUAL(res_len, strlen(expected_result));\
 } while(0)
 
-#define TEST_SCPI_NumberToStr_limited(_special, _value, _unit, expected_result, limit) do {\
-    scpi_number_t number;\
-    number.base = 10;\
-    number.special = (_special);\
-    number.unit = (_unit);\
-    if (number.special) { number.content.tag = (int)(_value); } else { number.content.value = (_value); }\
-    char buffer[100];\
-    memset(buffer, 0xaa, 100);\
-    size_t res_len;\
-    res_len = SCPI_NumberToStr(&scpi_context, scpi_special_numbers_def, &number, buffer, limit);\
-    size_t expected_len = SCPIDEFINE_strnlen(expected_result, limit - 1);\
-    CU_ASSERT_NSTRING_EQUAL(buffer, expected_result, expected_len);\
-    CU_ASSERT_EQUAL(buffer[expected_len], 0);\
-    CU_ASSERT_EQUAL((unsigned char)buffer[limit], 0xaa);\
-    CU_ASSERT_EQUAL(res_len, expected_len);\
-} while(0)
+#define TEST_SCPI_NumberToStr_limited(_special, _value, _unit, expected_result, limit)                                 \
+    do {                                                                                                               \
+        scpi_number_t number;                                                                                          \
+        number.base = 10;                                                                                              \
+        number.special = (_special);                                                                                   \
+        number.unit = (_unit);                                                                                         \
+        if (number.special) {                                                                                          \
+            number.content.tag = (int)(_value);                                                                        \
+        } else {                                                                                                       \
+            number.content.value = (_value);                                                                           \
+        }                                                                                                              \
+        char buffer[100];                                                                                              \
+        memset(buffer, 0xaa, 100);                                                                                     \
+        size_t res_len;                                                                                                \
+        res_len = SCPI_NumberToStr(&scpi_context, scpi_special_numbers_def, &number, buffer, limit);                   \
+        size_t expected_len = SCPIDEFINE_strnlen(expected_result, limit - 1);                                          \
+        CU_ASSERT_NSTRING_EQUAL(buffer, expected_result, expected_len);                                                \
+        CU_ASSERT_EQUAL(buffer[expected_len], 0);                                                                      \
+        CU_ASSERT_EQUAL((unsigned char)buffer[limit], 0xaa);                                                           \
+        CU_ASSERT_EQUAL(res_len, expected_len);                                                                        \
+    } while (0)
 
     TEST_SCPI_NumberToStr(FALSE, 10.5, SCPI_UNIT_NONE, "10.5");
     TEST_SCPI_NumberToStr(FALSE, 10.5, SCPI_UNIT_VOLT, "10.5 V");
