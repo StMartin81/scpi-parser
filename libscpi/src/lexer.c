@@ -155,9 +155,13 @@ static int isE(int c) {
     return c == 'e' || c == 'E';
 }
 
-#define SKIP_NONE       0
-#define SKIP_OK         1
-#define SKIP_INCOMPLETE -1
+enum _skip_result_t
+{
+    SKIP_INCOMPLETE = -1,
+    SKIP_NONE = 0,
+    SKIP_OK = 1,
+};
+typedef enum _skip_result_t skip_result_t;
 
 /* skip characters */
 /* 7.4.1 <PROGRAM MESSAGE UNIT SEPARATOR>*/
@@ -189,7 +193,9 @@ static int skipWs(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int skipDigit(lex_state_t * state) {
+static skip_result_t
+skipDigit(lex_state_t* state)
+{
     if (!iseos(state) && isdigit((uint8_t)(state->pos[0]))) {
         state->pos++;
         return SKIP_OK;
@@ -217,7 +223,9 @@ static int skipNumbers(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int skipPlusmn(lex_state_t * state) {
+static skip_result_t
+skipPlusmn(lex_state_t* state)
+{
     if (!iseos(state) && isplusmn(state->pos[0])) {
         state->pos++;
         return SKIP_OK;
@@ -246,7 +254,9 @@ static int skipAlpha(lex_state_t * state) {
  * @param chr
  * @return 
  */
-static int skipChr(lex_state_t * state, char chr) {
+static skip_result_t
+skipChr(lex_state_t* state, char chr)
+{
     if (!iseos(state) && ischr(state, chr)) {
         state->pos++;
         return SKIP_OK;
@@ -260,7 +270,9 @@ static int skipChr(lex_state_t * state, char chr) {
  * @param state
  * @return 
  */
-static int skipSlashDot(lex_state_t * state) {
+static skip_result_t
+skipSlashDot(lex_state_t* state)
+{
     if (!iseos(state) && (ischr(state, '/') | ischr(state, '.'))) {
         state->pos++;
         return SKIP_OK;
@@ -274,7 +286,9 @@ static int skipSlashDot(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int skipStar(lex_state_t * state) {
+static skip_result_t
+skipStar(lex_state_t* state)
+{
     if (!iseos(state) && ischr(state, '*')) {
         state->pos++;
         return SKIP_OK;
@@ -288,7 +302,9 @@ static int skipStar(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int skipColon(lex_state_t * state) {
+static skip_result_t
+skipColon(lex_state_t* state)
+{
     if (!iseos(state) && ischr(state, ':')) {
         state->pos++;
         return SKIP_OK;
@@ -304,7 +320,7 @@ static int skipColon(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int
+static skip_result_t
 skipProgramMnemonic(lex_state_t* state)
 {
     const char* startPos = state->pos;
@@ -356,7 +372,9 @@ int scpiLex_WhiteSpace(lex_state_t * state, scpi_token_t * token) {
  * @param state
  * @return 
  */
-static int skipCommonProgramHeader(lex_state_t * state) {
+static skip_result_t
+skipCommonProgramHeader(lex_state_t* state)
+{
     int res;
     if (skipStar(state)) {
         res = skipProgramMnemonic(state);
@@ -378,7 +396,9 @@ static int skipCommonProgramHeader(lex_state_t * state) {
  * @param state
  * @return 
  */
-static int skipCompoundProgramHeader(lex_state_t * state) {
+static skip_result_t
+skipCompoundProgramHeader(lex_state_t* state)
+{
     int res;
     int firstColon = skipColon(state);
 
