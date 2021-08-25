@@ -1,6 +1,5 @@
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake-cunit/cmake/Modules")
 
-include(CTest)
 include(CUnit)
 enable_testing()
 

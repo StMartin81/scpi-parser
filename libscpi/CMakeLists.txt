@@ -73,6 +73,7 @@ target_include_directories(scpi
   )
 
 if(BUILD_TESTS)
+  include(CTest)
   add_subdirectory(test)
 endif()
 
