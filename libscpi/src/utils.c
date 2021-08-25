@@ -55,15 +55,17 @@ static size_t cmdSeparatorPos(const char * cmd, size_t len);
  * @param set
  * @return
  */
-char * strnpbrk(const char *str, size_t size, const char *set) {
-    const char *scanp;
+const char*
+strnpbrk(const char* str, size_t size, const char* set)
+{
+    const char* scanp;
     long c, sc;
-    const char * strend = str + size;
+    const char* strend = str + size;
 
     while ((strend != str) && ((c = *str++) != 0)) {
         for (scanp = set; (sc = *scanp++) != '\0';)
             if (sc == c)
-                return ((char *) (str - 1));
+                return (str - 1);
     }
     return (NULL);
 }
@@ -439,9 +441,10 @@ static size_t patternSeparatorShortPos(const char * pattern, size_t len) {
  * @param len - max search length
  * @return position of separator or len
  */
-static size_t patternSeparatorPos(const char * pattern, size_t len) {
-
-    char * separator = strnpbrk(pattern, len, "?:[]");
+static size_t
+patternSeparatorPos(const char* pattern, size_t len)
+{
+    const char* separator = strnpbrk(pattern, len, "?:[]");
     if (separator == NULL) {
         return len;
     } else {
@@ -455,8 +458,10 @@ static size_t patternSeparatorPos(const char * pattern, size_t len) {
  * @param len - max search length
  * @return position of separator or len
  */
-static size_t cmdSeparatorPos(const char * cmd, size_t len) {
-    char * separator = strnpbrk(cmd, len, ":?");
+static size_t
+cmdSeparatorPos(const char* cmd, size_t len)
+{
+    const char* separator = strnpbrk(cmd, len, ":?");
     size_t result;
     if (separator == NULL) {
         result = len;
@@ -507,7 +512,7 @@ scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int
 
     scpi_bool_t result = FALSE;
     int brackets = 0;
-    int cmd_sep_pos = 0;
+    size_t cmd_sep_pos = 0;
 
     size_t numbers_idx = 0;
     int32_t *number_ptr = NULL;
@@ -549,117 +554,106 @@ scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int
     }
 
     while (1) {
-        int pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
+      size_t pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
 
-        cmd_sep_pos = cmdSeparatorPos(cmd_ptr, cmd_len);
+      cmd_sep_pos = cmdSeparatorPos(cmd_ptr, cmd_len);
 
-        if ((pattern_sep_pos > 0) && pattern_ptr[pattern_sep_pos - 1] == '#') {
-            if (numbers && (numbers_idx < numbers_len)) {
-                number_ptr = numbers + numbers_idx;
-                *number_ptr = default_value; /* default value */
-            } else {
-                number_ptr = NULL;
-            }
-            numbers_idx++;
+      if ((pattern_sep_pos > 0) && pattern_ptr[pattern_sep_pos - 1] == '#') {
+        if (numbers && (numbers_idx < numbers_len)) {
+          number_ptr = numbers + numbers_idx;
+          *number_ptr = default_value; /* default value */
         } else {
-            number_ptr = NULL;
+          number_ptr = NULL;
+        }
+        numbers_idx++;
+      } else {
+        number_ptr = NULL;
+      }
+
+      if (matchPattern(pattern_ptr, pattern_sep_pos, cmd_ptr, cmd_sep_pos, number_ptr)) {
+        SKIP_PATTERN(pattern_sep_pos);
+        SKIP_CMD(cmd_sep_pos);
+        result = TRUE;
+
+        /* command is complete */
+        if ((pattern_len == 0) && (cmd_len == 0)) {
+          break;
         }
 
-        if (matchPattern(pattern_ptr, pattern_sep_pos, cmd_ptr, cmd_sep_pos, number_ptr)) {
-            SKIP_PATTERN(pattern_sep_pos);
-            SKIP_CMD(cmd_sep_pos);
-            result = TRUE;
+        /* pattern complete, but command not */
+        if ((pattern_len == 0) && (cmd_len > 0)) {
+          result = FALSE;
+          break;
+        }
 
-            /* command is complete */
-            if ((pattern_len == 0) && (cmd_len == 0)) {
-                break;
-            }
-
-            /* pattern complete, but command not */
-            if ((pattern_len == 0) && (cmd_len > 0)) {
-                result = FALSE;
-                break;
-            }
-
-            /* command complete, but pattern not */
-            if (cmd_len == 0) {
-                /* verify all subsequent pattern parts are also optional */
-                while (pattern_len) {
-                    pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
-                    switch (pattern_ptr[pattern_sep_pos]) {
-                        case '[':
-                            brackets++;
-                            break;
-                        case ']':
-                            brackets--;
-                            break;
-                        default:
-                            break;
-                    }
-                    SKIP_PATTERN(pattern_sep_pos + 1);
-                    if (brackets == 0) {
-                        if ((pattern_len > 0) && (pattern_ptr[0] == '[')) {
-                            continue;
-                        } else {
-                            break;
-                        }
-                    }
-                }
-                if (pattern_len != 0) {
-                    result = FALSE;
-                }
-                break; /* exist optional keyword, command is complete */
-            }
-
-            /* both command and patter contains command separator at this position */
-            if ((pattern_len > 0)
-                    && ((pattern_ptr[0] == cmd_ptr[0])
-                    && (pattern_ptr[0] == ':'))) {
-                SKIP_PATTERN(1);
-                SKIP_CMD(1);
-            } else if ((pattern_len > 1)
-                    && (pattern_ptr[1] == cmd_ptr[0])
-                    && (pattern_ptr[0] == '[')
-                    && (pattern_ptr[1] == ':')) {
-                SKIP_PATTERN(2); /* for skip '[' in "[:" */
-                SKIP_CMD(1);
+        /* command complete, but pattern not */
+        if (cmd_len == 0) {
+          /* verify all subsequent pattern parts are also optional */
+          while (pattern_len) {
+            pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
+            switch (pattern_ptr[pattern_sep_pos]) {
+              case '[':
                 brackets++;
-            } else if ((pattern_len > 1)
-                    && (pattern_ptr[1] == cmd_ptr[0])
-                    && (pattern_ptr[0] == ']')
-                    && (pattern_ptr[1] == ':')) {
-                SKIP_PATTERN(2); /* for skip ']' in "]:" */
-                SKIP_CMD(1);
+                break;
+              case ']':
                 brackets--;
-            } else if ((pattern_len > 2)
-                    && (pattern_ptr[2] == cmd_ptr[0])
-                    && (pattern_ptr[0] == ']')
-                    && (pattern_ptr[1] == '[')
-                    && (pattern_ptr[2] == ':')) {
-                SKIP_PATTERN(3); /* for skip '][' in "][:" */
-                SKIP_CMD(1);
-                /* brackets++; */
-                /* brackets--; */
-            } else {
-                result = FALSE;
+                break;
+              default:
                 break;
             }
-        } else {
-            SKIP_PATTERN(pattern_sep_pos);
-            if ((pattern_ptr[0] == ']') && (pattern_ptr[1] == ':')) {
-                SKIP_PATTERN(2); /* for skip ']' in "]:" , pattern_ptr continue, while cmd_ptr remain unchanged */
-                brackets--;
-            } else if ((pattern_len > 2) && (pattern_ptr[0] == ']')
-                    && (pattern_ptr[1] == '[')
-                    && (pattern_ptr[2] == ':')) {
-                SKIP_PATTERN(3); /* for skip ']' in "][:" , pattern_ptr continue, while cmd_ptr remain unchanged */
-                /* brackets++; */
-                /* brackets--; */
-            } else {
-                result = FALSE;
+            SKIP_PATTERN(pattern_sep_pos + 1);
+            if (brackets == 0) {
+              if ((pattern_len > 0) && (pattern_ptr[0] == '[')) {
+                continue;
+              } else {
                 break;
+              }
             }
+          }
+          if (pattern_len != 0) {
+            result = FALSE;
+          }
+          break; /* exist optional keyword, command is complete */
         }
+
+        /* both command and patter contains command separator at this position */
+        if ((pattern_len > 0) && ((pattern_ptr[0] == cmd_ptr[0]) && (pattern_ptr[0] == ':'))) {
+          SKIP_PATTERN(1);
+          SKIP_CMD(1);
+        } else if ((pattern_len > 1) && (pattern_ptr[1] == cmd_ptr[0]) && (pattern_ptr[0] == '[') &&
+                   (pattern_ptr[1] == ':')) {
+          SKIP_PATTERN(2); /* for skip '[' in "[:" */
+          SKIP_CMD(1);
+          brackets++;
+        } else if ((pattern_len > 1) && (pattern_ptr[1] == cmd_ptr[0]) && (pattern_ptr[0] == ']') &&
+                   (pattern_ptr[1] == ':')) {
+          SKIP_PATTERN(2); /* for skip ']' in "]:" */
+          SKIP_CMD(1);
+          brackets--;
+        } else if ((pattern_len > 2) && (pattern_ptr[2] == cmd_ptr[0]) && (pattern_ptr[0] == ']') &&
+                   (pattern_ptr[1] == '[') && (pattern_ptr[2] == ':')) {
+          SKIP_PATTERN(3); /* for skip '][' in "][:" */
+          SKIP_CMD(1);
+          /* brackets++; */
+          /* brackets--; */
+        } else {
+          result = FALSE;
+          break;
+        }
+      } else {
+        SKIP_PATTERN(pattern_sep_pos);
+        if ((pattern_ptr[0] == ']') && (pattern_ptr[1] == ':')) {
+          SKIP_PATTERN(2); /* for skip ']' in "]:" , pattern_ptr continue, while cmd_ptr remain unchanged */
+          brackets--;
+        } else if ((pattern_len > 2) && (pattern_ptr[0] == ']') && (pattern_ptr[1] == '[') && (pattern_ptr[2] == ':')) {
+          SKIP_PATTERN(3); /* for skip ']' in "][:" , pattern_ptr continue, while cmd_ptr remain unchanged */
+                           /* brackets++; */
+                           /* brackets--; */
+        } else {
+          result = FALSE;
+          break;
+        }
+      }
     }
 
     return result;

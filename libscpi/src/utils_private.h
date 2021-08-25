@@ -52,23 +52,32 @@ extern "C" {
 #define LOCAL
 #endif
 
-    char * strnpbrk(const char *str, size_t size, const char *set) LOCAL;
-    scpi_bool_t compareStr(const char * str1, size_t len1, const char * str2, size_t len2) LOCAL;
-    scpi_bool_t compareStrAndNum(const char * str1, size_t len1, const char * str2, size_t len2, int32_t * num) LOCAL;
-    size_t UInt32ToStrBaseSign(uint32_t val, char * str, size_t len, int8_t base, scpi_bool_t sign) LOCAL;
-    size_t UInt64ToStrBaseSign(uint64_t val, char * str, size_t len, int8_t base, scpi_bool_t sign) LOCAL;
-    size_t strBaseToInt32(const char * str, int32_t * val, int8_t base) LOCAL;
-    size_t strBaseToUInt32(const char * str, uint32_t * val, int8_t base) LOCAL;
-    size_t strBaseToInt64(const char * str, int64_t * val, int8_t base) LOCAL;
-    size_t strBaseToUInt64(const char * str, uint64_t * val, int8_t base) LOCAL;
-    size_t strToFloat(const char * str, float * val) LOCAL;
-    size_t strToDouble(const char * str, double * val) LOCAL;
-    scpi_bool_t locateText(const char * str1, size_t len1, const char ** str2, size_t * len2) LOCAL;
-    scpi_bool_t locateStr(const char * str1, size_t len1, const char ** str2, size_t * len2) LOCAL;
-    size_t skipWhitespace(const char * cmd, size_t len) LOCAL;
-    scpi_bool_t matchPattern(const char * pattern, size_t pattern_len, const char * str, size_t str_len, int32_t * num) LOCAL;
-    scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int32_t *numbers, size_t numbers_len, int32_t default_value) LOCAL;
-    scpi_bool_t composeCompoundCommand(const scpi_token_t * prev, scpi_token_t * current) LOCAL;
+    const char* strnpbrk(const char* str, size_t size, const char* set) LOCAL;
+    scpi_bool_t compareStr(const char* str1, size_t len1, const char* str2, size_t len2) LOCAL;
+    scpi_bool_t compareStrAndNum(const char* str1, size_t len1, const char* str2, size_t len2, int32_t* num) LOCAL;
+    size_t UInt32ToStrBaseSign(uint32_t val, char* str, size_t len, int8_t base, scpi_bool_t sign) LOCAL;
+    size_t UInt64ToStrBaseSign(uint64_t val, char* str, size_t len, int8_t base, scpi_bool_t sign) LOCAL;
+    size_t strBaseToInt32(const char* str, int32_t* val, int8_t base) LOCAL;
+    size_t strBaseToUInt32(const char* str, uint32_t* val, int8_t base) LOCAL;
+    size_t strBaseToInt64(const char* str, int64_t* val, int8_t base) LOCAL;
+    size_t strBaseToUInt64(const char* str, uint64_t* val, int8_t base) LOCAL;
+    size_t strToFloat(const char* str, float* val) LOCAL;
+    size_t strToDouble(const char* str, double* val) LOCAL;
+    scpi_bool_t locateText(const char* str1, size_t len1, const char** str2, size_t* len2) LOCAL;
+    scpi_bool_t locateStr(const char* str1, size_t len1, const char** str2, size_t* len2) LOCAL;
+    size_t skipWhitespace(const char* cmd, size_t len) LOCAL;
+    scpi_bool_t matchPattern(const char* pattern,
+                             size_t pattern_len,
+                             const char* str,
+                             size_t str_len,
+                             int32_t* num) LOCAL;
+    scpi_bool_t matchCommand(const char* pattern,
+                             const char* cmd,
+                             size_t len,
+                             int32_t* numbers,
+                             size_t numbers_len,
+                             int32_t default_value) LOCAL;
+    scpi_bool_t composeCompoundCommand(const scpi_token_t* prev, scpi_token_t* current) LOCAL;
 
 #define SCPI_DTOSTRE_UPPERCASE   1
 #define SCPI_DTOSTRE_ALWAYS_SIGN 2

@@ -185,7 +185,7 @@ static scpi_bool_t findCommandHeader(scpi_t * context, const char * header, int 
  * @param len - command line length
  * @return FALSE if there was some error during evaluation of commands
  */
-scpi_bool_t SCPI_Parse(scpi_t * context, const char *data, int len) {
+scpi_bool_t SCPI_Parse(scpi_t * context, const char *data, size_t len) {
     scpi_bool_t result = TRUE;
     scpi_parser_state_t * state;
     int r;
@@ -305,7 +305,7 @@ void SCPI_InitHeap(scpi_t * context,
  * @param len - length of data
  * @return
  */
-scpi_bool_t SCPI_Input(scpi_t * context, const char * data, int len) {
+scpi_bool_t SCPI_Input(scpi_t * context, const char * data, size_t len) {
     scpi_bool_t result = TRUE;
     size_t totcmdlen = 0;
     int cmdlen = 0;
