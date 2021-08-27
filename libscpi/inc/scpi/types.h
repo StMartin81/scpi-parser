@@ -326,6 +326,7 @@ extern "C" {
         const scpi_command_t * cmd;
         lex_state_t lex_state;
         scpi_const_buffer_t cmd_raw;
+        scpi_const_buffer_t path_raw;
     };
     typedef struct _scpi_param_list_t scpi_param_list_t;
 

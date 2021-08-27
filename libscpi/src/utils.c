@@ -502,13 +502,27 @@ scpi_bool_t matchPattern(const char * pattern, size_t pattern_len, const char * 
 /**
  * Compare pattern and command
  * @param pattern eg. [:MEASure]:VOLTage:DC?
- * @param cmd - command
- * @param len - max search length
+ * @param cmd_raw - current command
+ * @param path - path from previous command
+ * @param numbers - multiple capabilities numbers
+ * @param numbers_len - size of numbers array
+ * @param default_value - default value for all numbers
  * @return TRUE if pattern matches, FALSE otherwise
  */
-scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int32_t *numbers, size_t numbers_len, int32_t default_value) {
+scpi_bool_t
+matchCommand(const char* pattern,
+             const scpi_token_t cmd_raw,
+             scpi_token_t* path,
+             int32_t* numbers,
+             const size_t numbers_len,
+             const int32_t default_value)
+{
 #define SKIP_PATTERN(n) do {pattern_ptr += (n);  pattern_len -= (n);} while(0)
-#define SKIP_CMD(n) do {cmd_ptr += (n);  cmd_len -= (n);} while(0)
+#define SKIP_CMD(n)                                                                                                    \
+    do {                                                                                                               \
+        *compound_ptr += (n);                                                                                          \
+        *compound_len -= (n);                                                                                          \
+    } while (0)
 
     scpi_bool_t result = FALSE;
     int brackets = 0;
@@ -520,13 +534,22 @@ scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int
     const char * pattern_ptr = pattern;
     size_t pattern_len = strlen(pattern);
 
-    const char * cmd_ptr = cmd;
-    size_t cmd_len = SCPIDEFINE_strnlen(cmd, len);
+    const char* cmd_raw_ptr = cmd_raw.ptr;
+    size_t cmd_raw_len = SCPIDEFINE_strnlen(cmd_raw_ptr, cmd_raw.len);
+
+    const char* path_raw_ptr = NULL;
+    size_t path_raw_len = 0;
+
+    const char* new_path_raw_ptr = NULL;
+    size_t new_path_raw_len = 0;
+
+    const char** compound_ptr = &cmd_raw_ptr;
+    size_t* compound_len = &cmd_raw_len;
 
     /* both commands are query commands? */
     if (pattern_ptr[pattern_len - 1] == '?') {
-        if (cmd_ptr[cmd_len - 1] == '?') {
-            cmd_len -= 1;
+        if (cmd_raw_ptr[cmd_raw_len - 1] == '?') {
+            cmd_raw_len -= 1;
             pattern_len -= 1;
         } else {
             return FALSE;
@@ -542,170 +565,147 @@ scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int
         SKIP_PATTERN(1);
     }
 
-    if (cmd_ptr[0] == ':') {
-        /* handle errornouse ":*IDN?" */
-        if (cmd_len >= 2) {
-            if (cmd_ptr[1] != '*') {
-                SKIP_CMD(1);
+    if (cmd_raw_ptr[0] == '*') /* ignore path for common commands */
+    {
+    } else if ((cmd_raw_len >= 2) &&
+               ((cmd_raw_ptr[0] == ':') && (cmd_raw_ptr[1] == '*'))) /* handle erroneous common command */ {
+        return FALSE;
+    } else if (cmd_raw_ptr[0] == ':') { /* ':' at beginning of command resets path */
+        SKIP_CMD(1);
+        *path = (scpi_token_t){ .type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0 };
+    } else if (path->len != 0) {
+        path_raw_ptr = path->ptr;
+        path_raw_len = path->len;
+        compound_len = &path_raw_len;
+        compound_ptr = &path_raw_ptr;
+    }
+
+    while (1) {
+        size_t pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
+
+        cmd_sep_pos = cmdSeparatorPos(*compound_ptr, *compound_len);
+
+        if ((pattern_sep_pos > 0) && pattern_ptr[pattern_sep_pos - 1] == '#') {
+            if (numbers && (numbers_idx < numbers_len)) {
+                number_ptr = numbers + numbers_idx;
+                *number_ptr = default_value; /* default value */
             } else {
-                return FALSE;
+                number_ptr = NULL;
+            }
+            numbers_idx++;
+        } else {
+            number_ptr = NULL;
+        }
+
+        if (matchPattern(pattern_ptr, pattern_sep_pos, *compound_ptr, cmd_sep_pos, number_ptr)) {
+
+            if (((*compound_ptr)[cmd_sep_pos] == ':') &&
+                (path_raw_len == 0)) /* found new path; only change if no previous path was set */ {
+                if (new_path_raw_ptr == NULL) {
+                    new_path_raw_ptr = *compound_ptr;
+                }
+                new_path_raw_len += cmd_sep_pos;
+            }
+
+            SKIP_PATTERN(pattern_sep_pos);
+            SKIP_CMD(cmd_sep_pos);
+            result = TRUE;
+
+            /* command is complete */
+            if ((pattern_len == 0) && (cmd_raw_len == 0)) {
+                break;
+            }
+
+            /* pattern complete, but command not */
+            if ((pattern_len == 0) && (cmd_raw_len > 0)) {
+                result = FALSE;
+                break;
+            }
+
+            /* command complete, but pattern not */
+            if (cmd_raw_len == 0) {
+                /* verify all subsequent pattern parts are also optional */
+                while (pattern_len) {
+                    pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
+                    switch (pattern_ptr[pattern_sep_pos]) {
+                        case '[':
+                            brackets++;
+                            break;
+                        case ']':
+                            brackets--;
+                            break;
+                        default:
+                            break;
+                    }
+                    SKIP_PATTERN(pattern_sep_pos + 1);
+                    if (brackets == 0) {
+                        if ((pattern_len > 0) && (pattern_ptr[0] == '[')) {
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                if (pattern_len != 0) {
+                    result = FALSE;
+                }
+                break; /* exist optional keyword, command is complete */
+            }
+
+            /* both command and pattern contain command separators at this position */
+            while (1) {
+                if ((pattern_len > 0) && (pattern_ptr[0] == ']')) {
+                    SKIP_PATTERN(1);
+                    brackets--;
+                } else if ((pattern_len > 0) && (pattern_ptr[0] == '[')) {
+                    SKIP_PATTERN(1);
+                    brackets++;
+                } else if ((pattern_len > 0) && (pattern_ptr[0] == ':')) {
+                    SKIP_PATTERN(1);
+                } else {
+                    break;
+                }
+            }
+            if ((*compound_len > 0) && ((*compound_ptr)[0] == ':')) {
+                SKIP_CMD(1);
+            }
+
+            if (path_raw_len == 0) {
+                compound_len = &cmd_raw_len;
+                compound_ptr = &cmd_raw_ptr;
+            }
+        } else {
+            if (brackets == 0) {
+                result = FALSE;
+                break;
+            }
+            SKIP_PATTERN(pattern_sep_pos);
+            while (1) {
+                if ((pattern_len > 0) && (pattern_ptr[0] == ']')) {
+                    SKIP_PATTERN(1); /* for skip ']', pattern_ptr continue, while cmd_ptr remain unchanged */
+                    brackets--;
+                } else if ((pattern_len > 0) && (pattern_ptr[0] == '[')) {
+                    SKIP_PATTERN(1);
+                    brackets++;
+                } else if ((pattern_len > 0) && (pattern_ptr[0] == ':')) {
+                    SKIP_PATTERN(1); /* for skip ':', pattern_ptr continue, while cmd_ptr remain unchanged */
+                } else {
+                    break;
+                }
             }
         }
     }
 
-    while (1) {
-      size_t pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
-
-      cmd_sep_pos = cmdSeparatorPos(cmd_ptr, cmd_len);
-
-      if ((pattern_sep_pos > 0) && pattern_ptr[pattern_sep_pos - 1] == '#') {
-        if (numbers && (numbers_idx < numbers_len)) {
-          number_ptr = numbers + numbers_idx;
-          *number_ptr = default_value; /* default value */
-        } else {
-          number_ptr = NULL;
-        }
-        numbers_idx++;
-      } else {
-        number_ptr = NULL;
-      }
-
-      if (matchPattern(pattern_ptr, pattern_sep_pos, cmd_ptr, cmd_sep_pos, number_ptr)) {
-        SKIP_PATTERN(pattern_sep_pos);
-        SKIP_CMD(cmd_sep_pos);
-        result = TRUE;
-
-        /* command is complete */
-        if ((pattern_len == 0) && (cmd_len == 0)) {
-          break;
-        }
-
-        /* pattern complete, but command not */
-        if ((pattern_len == 0) && (cmd_len > 0)) {
-          result = FALSE;
-          break;
-        }
-
-        /* command complete, but pattern not */
-        if (cmd_len == 0) {
-          /* verify all subsequent pattern parts are also optional */
-          while (pattern_len) {
-            pattern_sep_pos = patternSeparatorPos(pattern_ptr, pattern_len);
-            switch (pattern_ptr[pattern_sep_pos]) {
-              case '[':
-                brackets++;
-                break;
-              case ']':
-                brackets--;
-                break;
-              default:
-                break;
-            }
-            SKIP_PATTERN(pattern_sep_pos + 1);
-            if (brackets == 0) {
-              if ((pattern_len > 0) && (pattern_ptr[0] == '[')) {
-                continue;
-              } else {
-                break;
-              }
-            }
-          }
-          if (pattern_len != 0) {
-            result = FALSE;
-          }
-          break; /* exist optional keyword, command is complete */
-        }
-
-        /* both command and patter contains command separator at this position */
-        if ((pattern_len > 0) && ((pattern_ptr[0] == cmd_ptr[0]) && (pattern_ptr[0] == ':'))) {
-          SKIP_PATTERN(1);
-          SKIP_CMD(1);
-        } else if ((pattern_len > 1) && (pattern_ptr[1] == cmd_ptr[0]) && (pattern_ptr[0] == '[') &&
-                   (pattern_ptr[1] == ':')) {
-          SKIP_PATTERN(2); /* for skip '[' in "[:" */
-          SKIP_CMD(1);
-          brackets++;
-        } else if ((pattern_len > 1) && (pattern_ptr[1] == cmd_ptr[0]) && (pattern_ptr[0] == ']') &&
-                   (pattern_ptr[1] == ':')) {
-          SKIP_PATTERN(2); /* for skip ']' in "]:" */
-          SKIP_CMD(1);
-          brackets--;
-        } else if ((pattern_len > 2) && (pattern_ptr[2] == cmd_ptr[0]) && (pattern_ptr[0] == ']') &&
-                   (pattern_ptr[1] == '[') && (pattern_ptr[2] == ':')) {
-          SKIP_PATTERN(3); /* for skip '][' in "][:" */
-          SKIP_CMD(1);
-          /* brackets++; */
-          /* brackets--; */
-        } else {
-          result = FALSE;
-          break;
-        }
-      } else {
-        SKIP_PATTERN(pattern_sep_pos);
-        if ((pattern_ptr[0] == ']') && (pattern_ptr[1] == ':')) {
-          SKIP_PATTERN(2); /* for skip ']' in "]:" , pattern_ptr continue, while cmd_ptr remain unchanged */
-          brackets--;
-        } else if ((pattern_len > 2) && (pattern_ptr[0] == ']') && (pattern_ptr[1] == '[') && (pattern_ptr[2] == ':')) {
-          SKIP_PATTERN(3); /* for skip ']' in "][:" , pattern_ptr continue, while cmd_ptr remain unchanged */
-                           /* brackets++; */
-                           /* brackets--; */
-        } else {
-          result = FALSE;
-          break;
-        }
-      }
+    if ((result == TRUE) && (path->len == 0)) {
+        path->type = SCPI_TOKEN_INCOMPLETE_COMPOUND_PROGRAM_HEADER;
+        path->ptr = new_path_raw_ptr;
+        path->len = new_path_raw_len;
     }
 
     return result;
 #undef SKIP_PATTERN
 #undef SKIP_CMD
 }
-
-/**
- * Compose command from previous command anc current command
- *
- * @param prev pointer to previous command
- * @param current pointer of current command
- *
- * prev and current should be in the same memory buffer
- */
-scpi_bool_t composeCompoundCommand(const scpi_token_t * prev, scpi_token_t * current) {
-    size_t i;
-
-    /* Invalid input */
-    if (current == NULL || current->ptr == NULL || current->len == 0)
-        return FALSE;
-
-    /* no previous command - nothing to do*/
-    if (prev->ptr == NULL || prev->len == 0)
-        return TRUE;
-
-    /* Common command or command root - nothing to do */
-    if (current->ptr[0] == '*' || current->ptr[0] == ':')
-        return TRUE;
-
-    /* Previsou command was common command - nothing to do */
-    if (prev->ptr[0] == '*')
-        return TRUE;
-
-    /* Find last occurence of ':' */
-    for (i = prev->len; i > 0; i--) {
-        if (prev->ptr[i - 1] == ':') {
-            break;
-        }
-    }
-
-    /* Previous command was simple command - nothing to do*/
-    if (i == 0)
-        return TRUE;
-
-    current->ptr -= i;
-    current->len += i;
-    memmove(current->ptr, prev->ptr, i);
-    return TRUE;
-}
-
-
 
 #if !HAVE_STRNLEN
 /* use FreeBSD strnlen */

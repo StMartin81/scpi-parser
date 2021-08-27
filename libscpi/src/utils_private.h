@@ -72,12 +72,11 @@ extern "C" {
                              size_t str_len,
                              int32_t* num) LOCAL;
     scpi_bool_t matchCommand(const char* pattern,
-                             const char* cmd,
-                             size_t len,
+                             const scpi_token_t cmd_raw,
+                             scpi_token_t* path,
                              int32_t* numbers,
-                             size_t numbers_len,
-                             int32_t default_value) LOCAL;
-    scpi_bool_t composeCompoundCommand(const scpi_token_t* prev, scpi_token_t* current) LOCAL;
+                             const size_t numbers_len,
+                             const int32_t default_value);
 
 #define SCPI_DTOSTRE_UPPERCASE   1
 #define SCPI_DTOSTRE_ALWAYS_SIGN 2

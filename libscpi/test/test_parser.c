@@ -80,49 +80,141 @@ static scpi_result_t SCPI_Sample(scpi_t * context) {
 
 static const scpi_command_t scpi_commands[] = {
     /* IEEE Mandated Commands (SCPI std V1999.0 4.1.1) */
-    { .pattern = "*CLS", .callback = SCPI_CoreCls,},
-    { .pattern = "*ESE", .callback = SCPI_CoreEse,},
-    { .pattern = "*ESE?", .callback = SCPI_CoreEseQ,},
-    { .pattern = "*ESR?", .callback = SCPI_CoreEsrQ,},
-    { .pattern = "*IDN?", .callback = SCPI_CoreIdnQ,},
-    { .pattern = "*OPC", .callback = SCPI_CoreOpc,},
-    { .pattern = "*OPC?", .callback = SCPI_CoreOpcQ,},
-    { .pattern = "*RST", .callback = SCPI_CoreRst,},
-    { .pattern = "*SRE", .callback = SCPI_CoreSre,},
-    { .pattern = "*SRE?", .callback = SCPI_CoreSreQ,},
-    { .pattern = "*STB?", .callback = SCPI_CoreStbQ,},
-    { .pattern = "*TST?", .callback = SCPI_CoreTstQ,},
-    { .pattern = "*WAI", .callback = SCPI_CoreWai,},
+    {
+      .pattern = "*CLS",
+      .callback = SCPI_CoreCls,
+    },
+    {
+      .pattern = "*ESE",
+      .callback = SCPI_CoreEse,
+    },
+    {
+      .pattern = "*ESE?",
+      .callback = SCPI_CoreEseQ,
+    },
+    {
+      .pattern = "*ESR?",
+      .callback = SCPI_CoreEsrQ,
+    },
+    {
+      .pattern = "*IDN?",
+      .callback = SCPI_CoreIdnQ,
+    },
+    {
+      .pattern = "*OPC",
+      .callback = SCPI_CoreOpc,
+    },
+    {
+      .pattern = "*OPC?",
+      .callback = SCPI_CoreOpcQ,
+    },
+    {
+      .pattern = "*RST",
+      .callback = SCPI_CoreRst,
+    },
+    {
+      .pattern = "*SRE",
+      .callback = SCPI_CoreSre,
+    },
+    {
+      .pattern = "*SRE?",
+      .callback = SCPI_CoreSreQ,
+    },
+    {
+      .pattern = "*STB?",
+      .callback = SCPI_CoreStbQ,
+    },
+    {
+      .pattern = "*TST?",
+      .callback = SCPI_CoreTstQ,
+    },
+    {
+      .pattern = "*WAI",
+      .callback = SCPI_CoreWai,
+    },
 
     /* Required SCPI commands (SCPI std V1999.0 4.2.1) */
-    { .pattern = "SYSTem:ERRor[:NEXT]?", .callback = SCPI_SystemErrorNextQ,},
-    { .pattern = "SYSTem:ERRor:COUNt?", .callback = SCPI_SystemErrorCountQ,},
-    { .pattern = "SYSTem:VERSion?", .callback = SCPI_SystemVersionQ,},
+    {
+      .pattern = "SYSTem:ERRor[:NEXT]?",
+      .callback = SCPI_SystemErrorNextQ,
+    },
+    {
+      .pattern = "SYSTem:ERRor:COUNt?",
+      .callback = SCPI_SystemErrorCountQ,
+    },
+    {
+      .pattern = "SYSTem:VERSion?",
+      .callback = SCPI_SystemVersionQ,
+    },
 
-    { .pattern = "STATus:QUEStionable[:EVENt]?", .callback = SCPI_StatusQuestionableEventQ,},
-    { .pattern = "STATus:QUEStionable:CONDition?", .callback = SCPI_StatusQuestionableConditionQ,},
-    { .pattern = "STATus:QUEStionable:ENABle", .callback = SCPI_StatusQuestionableEnable,},
-    { .pattern = "STATus:QUEStionable:ENABle?", .callback = SCPI_StatusQuestionableEnableQ,},
+    {
+      .pattern = "STATus:QUEStionable[:EVENt]?",
+      .callback = SCPI_StatusQuestionableEventQ,
+    },
+    {
+      .pattern = "STATus:QUEStionable:CONDition?",
+      .callback = SCPI_StatusQuestionableConditionQ,
+    },
+    {
+      .pattern = "STATus:QUEStionable:ENABle",
+      .callback = SCPI_StatusQuestionableEnable,
+    },
+    {
+      .pattern = "STATus:QUEStionable:ENABle?",
+      .callback = SCPI_StatusQuestionableEnableQ,
+    },
 
-    {.pattern = "STATus:OPERation[:EVENt]?", .callback = SCPI_StatusOperationEventQ, },
-    {.pattern = "STATus:OPERation:CONDition?", .callback = SCPI_StatusOperationConditionQ, },
-    {.pattern = "STATus:OPERation:ENABle", .callback = SCPI_StatusOperationEnable, },
-    {.pattern = "STATus:OPERation:ENABle?", .callback = SCPI_StatusOperationEnableQ, },
+    {
+      .pattern = "STATus:OPERation[:EVENt]?",
+      .callback = SCPI_StatusOperationEventQ,
+    },
+    {
+      .pattern = "STATus:OPERation:CONDition?",
+      .callback = SCPI_StatusOperationConditionQ,
+    },
+    {
+      .pattern = "STATus:OPERation:ENABle",
+      .callback = SCPI_StatusOperationEnable,
+    },
+    {
+      .pattern = "STATus:OPERation:ENABle?",
+      .callback = SCPI_StatusOperationEnableQ,
+    },
 
-    { .pattern = "STATus:PRESet", .callback = SCPI_StatusPreset,},
+    {
+      .pattern = "STATus:PRESet",
+      .callback = SCPI_StatusPreset,
+    },
 
-    { .pattern = "TEXTfunction?", .callback = text_function,},
+    {
+      .pattern = "TEXTfunction?",
+      .callback = text_function,
+    },
 
-    { .pattern = "TEST:TREEA?", .callback = test_treeA,},
-    { .pattern = "TEST:TREEB?", .callback = test_treeB,},
+    {
+      .pattern = "TEST:TREEA?",
+      .callback = test_treeA,
+    },
+    {
+      .pattern = "TEST:TREEB?",
+      .callback = test_treeB,
+    },
 
-    { .pattern = "STUB", .callback = SCPI_Stub,},
-    { .pattern = "STUB?", .callback = SCPI_StubQ,},
+    {
+      .pattern = "STUB",
+      .callback = SCPI_Stub,
+    },
+    {
+      .pattern = "STUB?",
+      .callback = SCPI_StubQ,
+    },
 
-    { .pattern = "SAMple", .callback = SCPI_Sample,},
+    {
+      .pattern = "SAMple",
+      .callback = SCPI_Sample,
+    },
     SCPI_CMD_LIST_END
 };
-
 
 char output_buffer[1024];
 size_t output_buffer_pos = 0;
@@ -435,10 +527,10 @@ CU_Test(parser, IEEE4882)
     TEST_IEEE4882("*ESR?\r\n", "1\r\n");
 
     srq_val = 0;
-    TEST_IEEE4882("ABCD\r\n", ""); /* "Undefined header" cause command error */
+    TEST_IEEE4882("ABCD\r\n", "");                           /* "Undefined header" cause command error */
     CU_ASSERT_EQUAL(srq_val, (STB_ESR | STB_SRQ | STB_QMA)); /* value of STB as service request */
-    TEST_IEEE4882("*STB?\r\n", "100\r\n"); /* Event status register + Service request */
-    TEST_IEEE4882("*ESR?\r\n", "32\r\n"); /* Command error */
+    TEST_IEEE4882("*STB?\r\n", "100\r\n");                   /* Event status register + Service request */
+    TEST_IEEE4882("*ESR?\r\n", "32\r\n");                    /* Command error */
 
     TEST_IEEE4882("*STB?\r\n", "68\r\n"); /* Error queue is still not empty */
     TEST_IEEE4882("*ESR?\r\n", "0\r\n");
@@ -455,10 +547,10 @@ CU_Test(parser, IEEE4882)
 
     scpi_context.interface->control = NULL;
     srq_val = 0;
-    TEST_IEEE4882("ABCD\r\n", ""); /* "Undefined header" cause command error */
-    CU_ASSERT_EQUAL(srq_val, 0); /* no control callback */
+    TEST_IEEE4882("ABCD\r\n", "");         /* "Undefined header" cause command error */
+    CU_ASSERT_EQUAL(srq_val, 0);           /* no control callback */
     TEST_IEEE4882("*STB?\r\n", "100\r\n"); /* Event status register + Service request */
-    TEST_IEEE4882("*ESR?\r\n", "32\r\n"); /* Command error */
+    TEST_IEEE4882("*ESR?\r\n", "32\r\n");  /* Command error */
 #if USE_DEVICE_DEPENDENT_ERROR_INFORMATION
     TEST_IEEE4882("SYST:ERR:NEXT?\r\n", "-113,\"Undefined header;ABCD\"\r\n");
 #else /* USE_DEVICE_DEPENDENT_ERROR_INFORMATION */
@@ -475,7 +567,6 @@ CU_Test(parser, IEEE4882)
     TEST_IEEE4882("*RST\r\n", "");
     CU_ASSERT_EQUAL(RST_executed, FALSE);
     scpi_context.interface->reset = SCPI_Reset;
-
 
     TEST_IEEE4882("*TST?\r\n", "0\r\n");
 

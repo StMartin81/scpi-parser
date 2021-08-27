@@ -165,14 +165,14 @@ static scpi_bool_t processCommand(scpi_t * context) {
  * @result TRUE if context->paramlist is filled with correct values
  */
 static scpi_bool_t
-findCommandHeader(scpi_t* context, const char* header, size_t len)
+findCommandHeader(scpi_t* context, const scpi_token_t cmd_raw, scpi_token_t* path)
 {
     int32_t i;
     const scpi_command_t * cmd;
 
     for (i = 0; context->cmdlist[i].pattern != NULL; i++) {
         cmd = &context->cmdlist[i];
-        if (matchCommand(cmd->pattern, header, len, NULL, 0, 0)) {
+        if (matchCommand(cmd->pattern, cmd_raw, path, NULL, 0, 0)) {
             context->param_list.cmd = cmd;
             return TRUE;
         }
@@ -188,12 +188,12 @@ findCommandHeader(scpi_t* context, const char* header, size_t len)
  * @return FALSE if there was some error during evaluation of commands
  */
 scpi_bool_t
-SCPI_Parse(scpi_t* context, char* data, size_t len)
+SCPI_Parse(scpi_t* context, const char* data, size_t len)
 {
     scpi_bool_t result = TRUE;
     scpi_parser_state_t * state;
     size_t r;
-    scpi_token_t cmd_prev = { .type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0u };
+    scpi_token_t path = { .type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0u };
 
     if (context == NULL) {
         return FALSE;
@@ -210,9 +210,7 @@ SCPI_Parse(scpi_t* context, char* data, size_t len)
             result = FALSE;
         } else if (state->programHeader.len > 0) {
 
-            composeCompoundCommand(&cmd_prev, &state->programHeader);
-
-            if (findCommandHeader(context, state->programHeader.ptr, state->programHeader.len)) {
+            if (findCommandHeader(context, state->programHeader, &path)) {
 
                 context->param_list.lex_state.buffer = state->programData.ptr;
                 context->param_list.lex_state.pos = context->param_list.lex_state.buffer;
@@ -220,9 +218,11 @@ SCPI_Parse(scpi_t* context, char* data, size_t len)
                 context->param_list.cmd_raw.data = state->programHeader.ptr;
                 context->param_list.cmd_raw.position = 0;
                 context->param_list.cmd_raw.length = state->programHeader.len;
+                context->param_list.path_raw.data = path.ptr;
+                context->param_list.path_raw.position = 0;
+                context->param_list.path_raw.length = path.len;
 
                 result &= processCommand(context);
-                cmd_prev = state->programHeader;
             } else {
                 /* place undefined header with error */
                 /* calculate length of errornouse header and trim \r\n */
@@ -1485,13 +1485,19 @@ scpiParser_detectProgramMessageUnit(scpi_parser_state_t* state, const char* buff
  */
 scpi_bool_t SCPI_IsCmd(scpi_t * context, const char * cmd) {
     const char * pattern;
+    scpi_token_t cmd_token = {
+        .type = SCPI_TOKEN_UNKNOWN,
+        .ptr = cmd,
+        .len = strlen(cmd),
+    };
+    scpi_token_t path_token = { .type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0u };
 
     if (!context->param_list.cmd) {
         return FALSE;
     }
 
     pattern = context->param_list.cmd->pattern;
-    return matchCommand(pattern, cmd, strlen(cmd), NULL, 0, 0);
+    return matchCommand(pattern, cmd_token, &path_token, NULL, 0, 0);
 }
 
 #if USE_COMMAND_TAGS
@@ -1511,11 +1517,25 @@ int32_t SCPI_CmdTag(scpi_t * context) {
 #endif /* USE_COMMAND_TAGS */
 
 scpi_bool_t SCPI_Match(const char * pattern, const char * value, size_t len) {
-    return matchCommand(pattern, value, len, NULL, 0, 0);
+    scpi_token_t cmd = {
+        .type = SCPI_TOKEN_UNKNOWN,
+        .ptr = value,
+        .len = len,
+    };
+    scpi_token_t path = { .type = SCPI_TOKEN_UNKNOWN, .ptr = NULL, .len = 0u };
+    return matchCommand(pattern, cmd, &path, NULL, 0, 0);
 }
 
-scpi_bool_t SCPI_CommandNumbers(scpi_t * context, int32_t * numbers, size_t len, int32_t default_value) {
-    return matchCommand(context->param_list.cmd->pattern, context->param_list.cmd_raw.data, context->param_list.cmd_raw.length, numbers, len, default_value);
+scpi_bool_t
+SCPI_CommandNumbers(scpi_t* context, int32_t* numbers, size_t len, int32_t default_value)
+{
+    scpi_token_t cmd_raw = { .type = SCPI_TOKEN_UNKNOWN,
+                             .ptr = context->param_list.cmd_raw.data,
+                             .len = context->param_list.cmd_raw.length };
+    scpi_token_t path_raw = { .type = SCPI_TOKEN_UNKNOWN,
+                              .ptr = context->param_list.path_raw.data,
+                              .len = context->param_list.path_raw.length };
+    return matchCommand(context->param_list.cmd->pattern, cmd_raw, &path_raw, numbers, len, default_value);
 }
 
 /**
