@@ -290,6 +290,14 @@ CU_Test(parser, CommandsHandling)
     TEST_INPUT("TEST:TREEA?;TREEB?\r\n", "10;20\r\n");
     output_buffer_clear();
 
+    /* Test ctree traversal with common command */
+    TEST_INPUT("TEST:TREEA?;*OPC;TREEB?\r\n", "10;20\r\n");
+    output_buffer_clear();
+
+    /* Test ctree traversal with additional command */
+    TEST_INPUT("TEST:TREEA?;TREEB?\r\nTEST:TREEA?\r\n", "10;20\r\n10\r\n");
+    output_buffer_clear();
+
     TEST_INPUT("TEST:TREEA?;:TEXT? \"PARAM1\", \"PARAM2\"\r\n", "10;\"PARAM2\"\r\n");
     output_buffer_clear();
 
