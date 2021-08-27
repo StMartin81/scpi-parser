@@ -921,10 +921,10 @@ CU_Test(scpi_utils, swap)
     TEST_SWAP(64, 0x123456789ABCDEF0ull, 0xF0DEBC9A78563412ull);
 }
 
-#if USE_DEVICE_DEPENDENT_ERROR_INFORMATION && !USE_MEMORY_ALLOCATION_FREE
 
 CU_Test(scpi_utils, heap)
 {
+#if USE_DEVICE_DEPENDENT_ERROR_INFORMATION && !USE_MEMORY_ALLOCATION_FREE
 
 #define ERROR_INFO_HEAP_LENGTH  16
     scpi_error_info_heap_t heap;
@@ -973,5 +973,5 @@ CU_Test(scpi_utils, heap)
     scpiheap_free(&heap, ptr4, false);
     scpiheap_free(&heap, ptr8, false);
     CU_ASSERT_EQUAL(heap.count, heap.size);
-}
 #endif
+}
