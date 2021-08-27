@@ -518,7 +518,7 @@ scpi_bool_t matchCommand(const char * pattern, const char * cmd, size_t len, int
     int32_t *number_ptr = NULL;
 
     const char * pattern_ptr = pattern;
-    int pattern_len = strlen(pattern);
+    size_t pattern_len = strlen(pattern);
 
     const char * cmd_ptr = cmd;
     size_t cmd_len = SCPIDEFINE_strnlen(cmd, len);
@@ -732,8 +732,8 @@ int OUR_strncasecmp(const char *s1, const char *s2, size_t n) {
     unsigned char c1, c2;
 
     for (; n != 0; n--) {
-        c1 = tolower((unsigned char) *s1++);
-        c2 = tolower((unsigned char) *s2++);
+        c1 = (unsigned char)tolower(*s1++);
+        c2 = (unsigned char)tolower(*s2++);
         if (c1 != c2) {
             return c1 - c2;
         }
