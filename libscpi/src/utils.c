@@ -481,7 +481,7 @@ cmdSeparatorPos(const char* cmd, size_t len)
  * @return
  */
 scpi_bool_t matchPattern(const char * pattern, size_t pattern_len, const char * str, size_t str_len, int32_t * num) {
-    int pattern_sep_pos_short;
+    size_t pattern_sep_pos_short;
 
     if ((pattern_len > 0) && pattern[pattern_len - 1] == '#') {
         size_t new_pattern_len = pattern_len - 1;
